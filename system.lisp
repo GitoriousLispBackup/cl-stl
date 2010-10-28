@@ -19,4 +19,10 @@
   (:use :common-lisp)
   (:export :load-stl :triangle :mesh :vector-3
            #:strip-redundant-vertices
-           #:vertex))
+           #:vertex
+           #:make-vector-3))
+
+(defpackage cl-stl-test
+  (:use :common-lisp
+        :cl-stl
+        :lisp-unit))

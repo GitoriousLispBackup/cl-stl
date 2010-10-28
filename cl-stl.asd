@@ -17,7 +17,8 @@
 
 (defsystem :cl-stl
   :version "0.1"
-  :depends-on (:parse-number :cl-utilities :ieee-floats)
+  :depends-on (:parse-number :cl-utilities :ieee-floats :lisp-unit)
   :components
   ((:file "system")
-   (:file "cl-stl" :depends-on ("system"))))
+   (:file "cl-stl" :depends-on ("system"))
+   (:file "test" :depends-on ("system" "cl-stl"))))
