@@ -13,14 +13,19 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+;; along with cl-stl.  If not, see <http://www.gnu.org/licenses/>.
 
 (defpackage cl-stl
   (:use :common-lisp)
-  (:export :load-stl :triangle :mesh :vector-3
+  (:export #:load-stl
+           #:triangle
+           #:mesh
+           #:vector-3
            #:strip-redundant-vertices
            #:vertex
-           #:make-vector-3))
+           #:make-vector-3
+           #:make-vector-3-from-list
+           #:vector-3-equal-p))
 
 (defpackage cl-stl-test
   (:use :common-lisp
