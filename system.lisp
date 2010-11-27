@@ -7,7 +7,7 @@
 ;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
 
-;; Foobar is distributed in the hope that it will be useful,
+;; Cl-stl is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
@@ -17,15 +17,20 @@
 
 (defpackage cl-stl
   (:use :common-lisp)
-  (:export #:load-stl
+  (:export #:ascii-stl-p
+           #:load-stl))
+
+(defpackage mesh
+  (:use :common-lisp)
+  (:export #:vector-3-hash
+           #:explicit-triangle
+           #:make-explicit-triangle
            #:triangle
-           #:mesh
-           #:vector-3
-           #:strip-redundant-vertices
+           #:triangles
            #:vertex
-           #:make-vector-3
-           #:make-vector-3-from-list
-           #:vector-3-equal-p))
+           #:mesh
+           #:normal
+           #:strip-redundant-vertices))
 
 (defpackage cl-stl-test
   (:use :common-lisp

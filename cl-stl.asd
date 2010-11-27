@@ -7,7 +7,7 @@
 ;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
 
-;; Foobar is distributed in the hope that it will be useful,
+;; Cl-stl is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
@@ -17,8 +17,14 @@
 
 (defsystem :cl-stl
   :version "0.1"
-  :depends-on (:parse-number :cl-utilities :ieee-floats :lisp-unit)
+  :depends-on (:parse-number
+               :cl-utilities
+               :ieee-floats
+               :lisp-unit
+               :cl-mesh)
   :components
   ((:file "system")
-   (:file "cl-stl" :depends-on ("system"))
+   (:file "cl-stl" :depends-on ("system"
+                                "mesh"))
+   (:file "mesh" :depends-on ("system"))
    (:file "test" :depends-on ("system" "cl-stl"))))
