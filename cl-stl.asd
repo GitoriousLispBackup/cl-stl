@@ -1,4 +1,5 @@
-;; Copyright (c) 2010 Raffael L. Mancini <raffael.mancini@hcl-club.lu>
+;; Copyright (c) 2010, 2011, 2012 Raffael L. Mancini
+;; <raffael.mancini@hcl-club.lu>
 
 ;; This file is part of cl-stl.
 
@@ -7,7 +8,7 @@
 ;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
 
-;; Cl-stl is distributed in the hope that it will be useful,
+;; cl-stl is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
@@ -16,15 +17,14 @@
 ;; along with cl-stl.  If not, see <http://www.gnu.org/licenses/>.
 
 (defsystem :cl-stl
-  :version "0.1"
+  :version "0.2"
   :depends-on (:parse-number
                :cl-utilities
                :ieee-floats
                :lisp-unit
-               :cl-mesh)
+               :cl-mesh
+	       :l-math)
   :components
   ((:file "system")
-   (:file "cl-stl" :depends-on ("system"
-                                "mesh"))
-   (:file "mesh" :depends-on ("system"))
+   (:file "cl-stl" :depends-on ("system"))
    (:file "test" :depends-on ("system" "cl-stl"))))

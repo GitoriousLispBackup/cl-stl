@@ -1,4 +1,5 @@
-;; Copyright (c) 2010 Raffael L. Mancini <raffael.mancini@hcl-club.lu>
+;; Copyright (c) 2010, 2011, 2012 Raffael L. Mancini
+;; <raffael.mancini@hcl-club.lu>
 
 ;; This file is part of cl-stl.
 
@@ -7,7 +8,7 @@
 ;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
 
-;; Foobar is distributed in the hope that it will be useful,
+;; cl-stl is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
@@ -19,9 +20,8 @@
 
 (define-test read-ascii
   (let* ((stl (cl-stl:load-stl #p"test-data/ascii.stl"))
-         (first-triangle (first (mesh:triangles stl))))
-    (assert-equal (length (mesh:triangles stl)) 4)
-    (assert-true (cl-mesh:vector-3-equal-p
-                  (mesh:normal first-triangle)
-                  (cl-mesh:make-vector-3 :x 0.0 :y 0.0 :z -1.0)))))
-
+         (first-triangle (first (cl-mesh:triangles stl))))
+    (assert-equal (length (cl-mesh:triangles stl)) 4)
+    (assert-true (lm:vector=
+                  (cl-mesh:normal first-triangle)
+                  (lm:vector 0.0 0.0 -1.0)))))

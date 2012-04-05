@@ -1,4 +1,5 @@
-;; Copyright (c) 2010 Raffael L. Mancini <raffael.mancini@hcl-club.lu>
+;; Copyright (c) 2010, 2011, 2012 Raffael L. Mancini
+;; <raffael.mancini@hcl-club.lu>
 
 ;; This file is part of cl-stl.
 
@@ -7,7 +8,7 @@
 ;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
 
-;; Foobar is distributed in the hope that it will be useful,
+;; cl-stl is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
@@ -21,8 +22,9 @@
   "Return a list of triangles loaded from ascii stream"
   (let ((triangles (make-sequence 'list 0)))
     (loop
-       for line = (cl-utilities:split-sequence #\Space
-                                               (read-line stream nil) :remove-empty-subseqs t)
+       for line = (cl-utilities:split-sequence
+		   #\Space
+		   (read-line stream nil) :remove-empty-subseqs t)
        for first = (car line)
        with vertices = nil
        with normal = nil
@@ -39,13 +41,13 @@
            ((equal first "facet")
             (setf in-facet t)
             (setf normal
-                  (cl-mesh:make-vector-3-from-list (cddr line))))
+                  (lm:to-vector (cddr line))))
 
            ((equal line '("outer" "loop"))
             (setf in-loop t))
            
            ((equal first "vertex")
-            (push (cl-mesh:make-vector-3-from-list (cdr line))
+            (push (lm:to-vector (cdr line))
                   vertices))
 
            ((equal first "endloop")
@@ -55,7 +57,9 @@
 
            ((equal first "endfacet")
             (push
-             (mesh:make-explicit-triangle :vertices vertices :normal normal)
+             (make-instance 'cl-mesh:explicit-triangle
+			    :vertices vertices
+			    :normal normal)
              triangles)
             (setf vertices nil))
            
@@ -78,23 +82,23 @@
             (read-byte stream)))
     int))
 
-(defun read-vector-3 (stream)
+(defun read-vector (stream)
   "Read 3 32bit ieee floats from a binary stream into a vector-3"
-  (cl-mesh:make-vector-3 :x (ieee-floats:decode-float32
-                          (read-int-32 stream))
-                      :y (ieee-floats:decode-float32
-                          (read-int-32 stream))
-                      :z (ieee-floats:decode-float32
-                          (read-int-32 stream))))
+  (lm:vector (ieee-floats:decode-float32
+	      (read-int-32 stream))
+             (ieee-floats:decode-float32
+	      (read-int-32 stream))
+	     (ieee-floats:decode-float32
+	      (read-int-32 stream))))
 
 (defun read-triangle (stream)
   "Read a triangle from binary stream"
-  (let ((triangle (mesh:make-explicit-triangle
-                   :normal (read-vector-3 stream)
+  (let ((triangle (make-instance 'cl-mesh:explicit-triangle
+                   :normal (read-vector stream)
                    :vertices (list
-                              (read-vector-3 stream)
-                              (read-vector-3 stream)
-                              (read-vector-3 stream)))))
+                              (read-vector stream)
+                              (read-vector stream)
+                              (read-vector stream)))))
     (file-position stream (+ (file-position stream) 2))
     triangle))
 
@@ -121,7 +125,7 @@
                        :direction :input
                        :if-does-not-exist :error
                        :element-type element-type)
-      (mesh:strip-redundant-vertices
+      (cl-mesh:strip-redundant-vertices
        (if is-ascii
            (load-ascii-stl f)
            (load-binary-stl f))))))

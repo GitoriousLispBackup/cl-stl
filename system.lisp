@@ -1,4 +1,5 @@
-;; Copyright (c) 2010 Raffael L. Mancini <raffael.mancini@hcl-club.lu>
+;; Copyright (c) 2010, 2011, 2012 Raffael L. Mancini
+;; <raffael.mancini@hcl-club.lu>
 
 ;; This file is part of cl-stl.
 
@@ -7,7 +8,7 @@
 ;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
 
-;; Cl-stl is distributed in the hope that it will be useful,
+;; cl-stl is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
@@ -19,18 +20,6 @@
   (:use :common-lisp)
   (:export #:ascii-stl-p
            #:load-stl))
-
-(defpackage mesh
-  (:use :common-lisp)
-  (:export #:vector-3-hash
-           #:explicit-triangle
-           #:make-explicit-triangle
-           #:triangle
-           #:triangles
-           #:vertex
-           #:mesh
-           #:normal
-           #:strip-redundant-vertices))
 
 (defpackage cl-stl-test
   (:use :common-lisp
