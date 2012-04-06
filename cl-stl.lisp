@@ -18,9 +18,15 @@
 
 (in-package cl-stl)
 
+(defun make-triangles-array ()
+  (make-array 0
+	      :element-type 'cl-mesh:triangle
+	      :fill-pointer 0
+	      :adjustable t))
+
 (defun load-ascii-stl (stream)
   "Return a list of triangles loaded from ascii stream"
-  (let ((triangles (make-sequence 'list 0)))
+  (let ((triangles (make-triangles-array)))
     (loop
        for line = (cl-utilities:split-sequence
 		   #\Space
@@ -41,14 +47,15 @@
            ((equal first "facet")
             (setf in-facet t)
             (setf normal
-                  (lm:to-vector (cddr line))))
+                  (lm:to-vector (parse-float (cddr line)))))
 
            ((equal line '("outer" "loop"))
             (setf in-loop t))
            
-           ((equal first "vertex")
-            (push (lm:to-vector (cdr line))
-                  vertices))
+           ;; ((equal first "vertex")
+           ;;  (vector-push-extend
+	   ;;   (lm:to-vector (parse-float (cdr line)))
+	   ;;   vertices))
 
            ((equal first "endloop")
             (unless in-loop
@@ -56,8 +63,8 @@
               (setf in-loop nil)))
 
            ((equal first "endfacet")
-            (push
-             (make-instance 'cl-mesh:explicit-triangle
+            (vector-push-extend
+             (make-instance 'cl-mesh:triangle
 			    :vertices vertices
 			    :normal normal)
              triangles)
@@ -74,6 +81,21 @@
                  (error "Some tag not closed")))
     triangles))
 
+(defun load-binary-stl (stream)
+  "Return a list of triangles loaded from binary stream"
+  ;; Skip header
+  (file-position stream 80)
+  (let ((triangle-count (read-int-32 stream))
+	(triangles (make-triangles-array)))
+    (loop for i upto (1- triangle-count)
+	 do
+	 (vector-push-extend (read-triangle stream)
+			     triangles)
+       ;; collect (read-triangle stream))
+	)
+	triangles))
+
+
 (defun read-int-32 (stream)
   "Read a 32bit big endian number from stream into number"
   (let ((int 0))
@@ -81,6 +103,10 @@
       (setf (ldb (byte 8 (* i 8)) int)
             (read-byte stream)))
     int))
+
+(defun parse-float (strings)
+  (mapcar #'parse-number:parse-real-number
+	  strings))
 
 (defun read-vector (stream)
   "Read 3 32bit ieee floats from a binary stream into a vector-3"
@@ -93,7 +119,7 @@
 
 (defun read-triangle (stream)
   "Read a triangle from binary stream"
-  (let ((triangle (make-instance 'cl-mesh:explicit-triangle
+  (let ((triangle (make-instance 'cl-mesh:triangle
                    :normal (read-vector stream)
                    :vertices (list
                               (read-vector stream)
@@ -101,14 +127,6 @@
                               (read-vector stream)))))
     (file-position stream (+ (file-position stream) 2))
     triangle))
-
-(defun load-binary-stl (stream)
-  "Return a list of triangles loaded from binary stream"
-  ;; Skip header
-  (file-position stream 80)
-  (let ((triangle-count (read-int-32 stream)))
-    (loop for i upto (1- triangle-count)
-       collect (read-triangle stream))))
 
 (defun ascii-stl-p (path)
   "Is the file in ascii format as opposed to binary stl"
@@ -125,7 +143,13 @@
                        :direction :input
                        :if-does-not-exist :error
                        :element-type element-type)
-      (cl-mesh:strip-redundant-vertices
-       (if is-ascii
-           (load-ascii-stl f)
-           (load-binary-stl f))))))
+      (make-instance 'cl-mesh:mesh
+		     :vertices nil
+		     :triangles
+		     (if is-ascii
+			 (load-ascii-stl f)
+			 (load-binary-stl f))))))
+      ;; (cl-mesh:strip-redundant-vertices
+      ;;  (if is-ascii
+      ;;      (load-ascii-stl f)
+      ;;      (load-binary-stl f))))))
