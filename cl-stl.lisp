@@ -52,10 +52,10 @@
            ((equal line '("outer" "loop"))
             (setf in-loop t))
            
-           ;; ((equal first "vertex")
-           ;;  (vector-push-extend
-	   ;;   (lm:to-vector (parse-float (cdr line)))
-	   ;;   vertices))
+           ((equal first "vertex")
+            (push
+	     (lm:to-vector (parse-float (cdr line)))
+	     vertices))
 
            ((equal first "endloop")
             (unless in-loop
@@ -76,7 +76,7 @@
               (setf in-solid nil)))
 
            (t
-            (error "Fail, I don't know this")))
+            (error "Fail, I don't know ~a" first)))
        finally (unless (or in-solid in-facet in-loop)
                  (error "Some tag not closed")))
     triangles))
