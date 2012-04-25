@@ -26,7 +26,13 @@
 
 (defun load-ascii-stl (stream)
   "Return a list of triangles loaded from ascii stream"
-  (let ((triangles (make-triangles-array)))
+  (let ((triangles (make-triangles-array))
+	(x-min +1e10)
+	(x-max -1e10)
+	(y-min +1e10)
+	(y-max -1e10)
+	(z-min +1e10)
+	(z-max -1e10))
     (loop
        for line = (cl-utilities:split-sequence
 		   #\Space
@@ -43,25 +49,28 @@
            ((equal first "solid")
             (setf solid-name (nth 1 line))
             (setf in-solid t))
-           
            ((equal first "facet")
             (setf in-facet t)
             (setf normal
                   (lm:to-vector (parse-float (cddr line)))))
-
            ((equal line '("outer" "loop"))
             (setf in-loop t))
-           
            ((equal first "vertex")
-            (push
-	     (lm:to-vector (parse-float (cdr line)))
-	     vertices))
-
+	    (let* ((vertex (lm:to-vector (parse-float (cdr line))))
+		   (x (lm:x vertex))
+		   (y (lm:y vertex))
+		   (z (lm:z vertex)))
+	      (cond ((> x-min x) (setf x-min x))
+		    ((< x-max x) (setf x-max x)))
+	      (cond ((> y-min y) (setf y-min y))
+		    ((< y-max y) (setf y-max y)))
+	      (cond ((> z-min z) (setf z-min z))
+		    ((< z-max z) (setf z-max z)))
+	      (push vertex vertices)))
            ((equal first "endloop")
             (unless in-loop
               (error "Loop not opened")
               (setf in-loop nil)))
-
            ((equal first "endfacet")
             (vector-push-extend
              (make-instance 'cl-mesh:triangle
@@ -69,32 +78,47 @@
 			    :normal normal)
              triangles)
             (setf vertices nil))
-           
            ((equal first "endsolid")
             (unless in-solid
               (error "Solid not opened")
               (setf in-solid nil)))
-
            (t
             (error "Fail, I don't know ~a" first)))
        finally (unless (or in-solid in-facet in-loop)
                  (error "Some tag not closed")))
-    triangles))
+    (values triangles x-min x-max y-min y-max z-min z-max)))
+
+(defun triangle-extrema (triangle)
+  (loop
+     for vertex in (cl-mesh:vertices triangle)
+     minimizing (lm:x vertex) into x-min
+     maximizing (lm:x vertex) into x-max
+     minimizing (lm:y vertex) into y-min
+     maximizing (lm:y vertex) into y-max
+     minimizing (lm:z vertex) into z-min
+     maximizing (lm:z vertex) into z-max
+     finally (return (list x-min x-max y-min y-max z-min z-max))))
 
 (defun load-binary-stl (stream)
   "Return a list of triangles loaded from binary stream"
   ;; Skip header
   (file-position stream 80)
-  (let ((triangle-count (read-int-32 stream))
-	(triangles (make-triangles-array)))
-    (loop for i upto (1- triangle-count)
-	 do
-	 (vector-push-extend (read-triangle stream)
-			     triangles)
-       ;; collect (read-triangle stream))
-	)
-	triangles))
-
+  (loop
+     with triangle-count = (read-int-32 stream)
+     repeat triangle-count
+     for triangle = (read-binary-triangle stream)
+     for (xi xa yi ya zi za) = (triangle-extrema triangle)
+     with triangles = (make-triangles-array)
+     minimizing xi into x-min
+     maximizing xa into x-max
+     minimizing yi into y-min
+     maximizing ya into y-max
+     minimizing zi into z-min
+     maximizing za into z-max
+     do
+       (vector-push-extend triangle triangles)
+     finally
+       (return (values triangles x-min x-max y-min y-max z-min z-max))))
 
 (defun read-int-32 (stream)
   "Read a 32bit big endian number from stream into number"
@@ -117,7 +141,7 @@
 	     (ieee-floats:decode-float32
 	      (read-int-32 stream))))
 
-(defun read-triangle (stream)
+(defun read-binary-triangle (stream)
   "Read a triangle from binary stream"
   (let ((triangle (make-instance 'cl-mesh:triangle
                    :normal (read-vector stream)
@@ -143,13 +167,17 @@
                        :direction :input
                        :if-does-not-exist :error
                        :element-type element-type)
-      (make-instance 'cl-mesh:mesh
-		     :vertices nil
-		     :triangles
-		     (if is-ascii
-			 (load-ascii-stl f)
-			 (load-binary-stl f))))))
-      ;; (cl-mesh:strip-redundant-vertices
-      ;;  (if is-ascii
-      ;;      (load-ascii-stl f)
-      ;;      (load-binary-stl f))))))
+      (multiple-value-bind (triangles x-min x-max y-min y-max z-min z-max)
+	  (if is-ascii
+	      (load-ascii-stl f)
+	      (load-binary-stl f))
+	
+	(make-instance 'cl-mesh:mesh
+		       :vertices nil
+		       :triangles triangles
+		       :x-min x-min
+		       :x-max x-max
+		       :y-min y-min
+		       :y-max y-max
+		       :z-min z-min
+		       :z-max z-max)))))
